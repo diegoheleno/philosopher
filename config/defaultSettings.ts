@@ -16,7 +16,7 @@ const proSettings: DefaultSettings = {
   menu: {
     locale: true,
   },
-  title: 'Marketplace Uni.Co',
+  title: 'Dining Philosopher',
   pwa: false,
   iconfontUrl: '',
 };
