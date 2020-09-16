@@ -10,7 +10,7 @@ interface LogElementProps {
 const LogElement : FunctionComponent<LogElementProps> = props => {
   return (
     <Col>
-      {/* <Row><span>{props.dinner} refeições feitas</span></Row> */}
+      <Row><span>{props.dinner} refeições feitas</span></Row>
       {props.logs.map(log =>
         <Row style={{ display: 'flex' }} >
           <Tag style={{ display: 'flex', flexGrow: 1 }} color={log.color}>{log.message}</Tag>

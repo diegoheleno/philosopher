@@ -14,6 +14,7 @@ const PhilosopherTable: FunctionComponent<PhilosopherTableProps> = () => {
   const [tableRandom, setTableRandom] = useState(new TableRandom())
   const [tableSemaphore, setTableSemaphore] = useState(new TableSemaphore())
   const [speed, setSpeed] = useState<number>(1000)
+  const [dinnerCount, setDinnerCount] = useState<{ table: number, randon: number, semaphore: number }>({table: 0, randon: 0, semaphore: 0})
 
   const sleep = (miliseconds: number | string) => {
     const value = typeof miliseconds === 'number' ? miliseconds : parseInt(miliseconds);
@@ -21,7 +22,6 @@ const PhilosopherTable: FunctionComponent<PhilosopherTableProps> = () => {
   }
 
   useEffect(() => {
-    console.log(table.dinners)
     if (table.deadlock()) {
       table.set_log('Deadlock :(', 5)
       table.set_log('Reiniciando...', 5)
@@ -37,7 +37,9 @@ const PhilosopherTable: FunctionComponent<PhilosopherTableProps> = () => {
         break
 
       case PhilosopherState.Hungry:
-        table.take_forks(philosopher)
+        if (table.take_forks(philosopher) === PhilosopherState.Eating) {
+          setDinnerCount({ ...dinnerCount, table: dinnerCount.table += 1 })
+        }
         break
 
       case PhilosopherState.Eating:
@@ -64,7 +66,9 @@ const PhilosopherTable: FunctionComponent<PhilosopherTableProps> = () => {
         break
 
       case PhilosopherState.Hungry:
-        tableRandom.take_ruturn_forks(philosopher)
+        if (tableRandom.take_ruturn_forks(philosopher) === PhilosopherState.Eating) {
+          setDinnerCount({ ...dinnerCount, randon: dinnerCount.randon += 1 })
+        }
         break
 
       case PhilosopherState.Returning:
@@ -80,7 +84,7 @@ const PhilosopherTable: FunctionComponent<PhilosopherTableProps> = () => {
       default: break
     }
 
-    sleep(speed).then(() => setTableRandom({ ...tableRandom })).catch(() => tableRandom.set_log('error'))
+    sleep(speed).then(() => setTableRandom({ ...tableRandom })).catch(() => tableRandom.set_log('error', 5))
   }, [tableRandom])
 
   useEffect(() => {
@@ -97,9 +101,10 @@ const PhilosopherTable: FunctionComponent<PhilosopherTableProps> = () => {
         break
 
       case PhilosopherState.Hungry:
-        if (tableSemaphore.getSemaphorePermission(philosopher))
+        if (tableSemaphore.getSemaphorePermission(philosopher)){
           tableSemaphore.take_forks(philosopher)
-        else
+          setDinnerCount({ ...dinnerCount, semaphore: dinnerCount.semaphore += 1 })
+        }else
           tableSemaphore.set_log(`Philosopher ${philosopher.index + 1} foi colocado na fila`, philosopher.index)
         break
 
@@ -125,15 +130,15 @@ const PhilosopherTable: FunctionComponent<PhilosopherTableProps> = () => {
       <Row style={{ borderRadius: '20px'}}>
         <Col span={8} style={{ backgroundColor: 'white', padding: '20px' }}>
           <TableElement philosophers={table.philosophers} forks={table.forks} />
-          <LogElement logs={table.logs} dinner={table.dinners} />
+          <LogElement logs={table.logs} dinner={dinnerCount.table} />
         </Col>
         <Col span={8} style={{ backgroundColor: 'white', padding: '20px' }}>
           <TableElement philosophers={tableRandom.philosophers} forks={tableRandom.forks} />
-          <LogElement logs={tableRandom.logs} dinner={tableRandom.dinners} />
+          <LogElement logs={tableRandom.logs} dinner={dinnerCount.randon} />
         </Col>
         <Col span={8} style={{ backgroundColor: 'white', padding: '20px' }}>
           <TableElement philosophers={tableSemaphore.philosophers} forks={tableSemaphore.forks} />
-          <LogElement logs={tableSemaphore.logs} dinner={tableSemaphore.dinners} />
+          <LogElement logs={tableSemaphore.logs} dinner={dinnerCount.semaphore} />
         </Col>
       </Row>
     </>

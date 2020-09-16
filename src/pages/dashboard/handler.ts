@@ -7,7 +7,6 @@ export class Table implements ITable {
   readonly philosophers: Philosopher[];
   readonly forks: Fork[];
   readonly logs: Log[] = [];
-  public dinners: number = 0;
 
   constructor() {
     this.philosophers = [0, 1, 2, 3, 4].map((_, index) => defaultPhilosopher(index))
@@ -19,10 +18,9 @@ export class Table implements ITable {
       fork.philosopher = undefined
       fork.state = ForkState.Free
     })
-  }
-
-  public readonly set_dinners = () => {
-    this.dinners += 1
+    this.philosophers.map(philosopher => {
+      philosopher.state = PhilosopherState.Thinking
+    })
   }
 
   public readonly set_log = (message: string, index: number) => {
@@ -55,7 +53,6 @@ export class Table implements ITable {
 
     if (tookLeft && tookRigth) {
       this.set_log(`Philosopher ${philosopher.index + 1} começou a comer`, philosopher.index)
-      this.set_dinners()
       return philosopher.state = PhilosopherState.Eating
     }
 
@@ -111,7 +108,6 @@ export class TableRandom extends Table {
 
     if (tookLeft && tookRigth) {
       this.set_log(`Philosopher ${philosopher.index + 1} começou a comer`, philosopher.index)
-      this.set_dinners()
       return philosopher.state = PhilosopherState.Eating
     }
 
