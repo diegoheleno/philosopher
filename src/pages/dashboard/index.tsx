@@ -1,33 +1,36 @@
 import React, { FunctionComponent, useEffect, useState } from 'react';
-import { Row } from 'antd';
+import { Col, InputNumber, Row } from 'antd';
 import TableElement from './TableElement';
 import { Table, TableRandom, TableSemaphore } from './handler'
 import { PhilosopherState } from './types';
+import LogElement from './LogElement';
 
 interface PhilosopherTableProps {
   dispatch: any;
 }
 
-const PhilosopherTable: FunctionComponent<PhilosopherTableProps> = props => {
+const PhilosopherTable: FunctionComponent<PhilosopherTableProps> = () => {
   const [table, setTable] = useState(new Table())
   const [tableRandom, setTableRandom] = useState(new TableRandom())
   const [tableSemaphore, setTableSemaphore] = useState(new TableSemaphore())
-  const [log, setLog] = useState<string[]>([])
+  const [speed, setSpeed] = useState<number>(1000)
 
-  const sleep = (miliseconds: number) =>
-    new Promise((resolve: any) => setTimeout(resolve, miliseconds));
+  const sleep = (miliseconds: number | string) => {
+    const value = typeof miliseconds === 'number' ? miliseconds : parseInt(miliseconds);
+    return new Promise((resolve: any) => setTimeout(resolve, value));
+  }
 
   useEffect(() => {
-    if (table.deadlock())
-      return
-
+    if (table.deadlock()) {
+      table.set_log('Deadlock :(')
+    }
     const index = Math.floor(Math.random() * 5);
     const philosopher = table.philosophers[index]
 
     switch (philosopher.state) {
       case PhilosopherState.Thinking:
         philosopher.state = PhilosopherState.Hungry
-        console.log(`Philosopher ${philosopher.index + 1} está com fome`)
+        table.set_log(`Philosopher ${philosopher.index + 1} está com fome`)
         break
 
       case PhilosopherState.Hungry:
@@ -35,16 +38,16 @@ const PhilosopherTable: FunctionComponent<PhilosopherTableProps> = props => {
         break
 
       case PhilosopherState.Eating:
-        console.log(`Philosopher ${philosopher.index + 1} acabou de comer`)
+        table.set_log(`Philosopher ${philosopher.index + 1} acabou de comer`)
         table.put_forks(philosopher)
-        console.log(`Philosopher ${philosopher.index + 1} está pensando`)
+        table.set_log(`Philosopher ${philosopher.index + 1} está pensando`)
         break
 
       default: break
     }
 
     // setTable({ ...table })
-    sleep(100).then(() => setTable({ ...table })).catch(error => console.log('error: ', error))
+    sleep(speed).then(() => setTable({ ...table })).catch(() => table.set_log('error'))
   }, [table])
 
   useEffect(() => {
@@ -54,7 +57,7 @@ const PhilosopherTable: FunctionComponent<PhilosopherTableProps> = props => {
     switch (philosopher.state) {
       case PhilosopherState.Thinking:
         philosopher.state = PhilosopherState.Hungry
-        console.log(`Philosopher ${philosopher.index + 1} está com fome`)
+        tableRandom.set_log(`Philosopher ${philosopher.index + 1} está com fome`)
         break
 
       case PhilosopherState.Hungry:
@@ -66,16 +69,15 @@ const PhilosopherTable: FunctionComponent<PhilosopherTableProps> = props => {
         break
 
       case PhilosopherState.Eating:
-        console.log(`Philosopher ${philosopher.index + 1} acabou de comer`)
+        tableRandom.set_log(`Philosopher ${philosopher.index + 1} acabou de comer`)
         tableRandom.put_forks(philosopher)
-        console.log(`Philosopher ${philosopher.index + 1} está pensando`)
+        tableRandom.set_log(`Philosopher ${philosopher.index + 1} está pensando`)
         break
 
       default: break
     }
 
-    // setTable({ ...table })
-    sleep(100).then(() => setTableRandom({ ...tableRandom })).catch(error => console.log('error: ', error))
+    sleep(speed).then(() => setTableRandom({ ...tableRandom })).catch(() => tableRandom.set_log('error'))
   }, [tableRandom])
 
   useEffect(() => {
@@ -88,36 +90,50 @@ const PhilosopherTable: FunctionComponent<PhilosopherTableProps> = props => {
     switch (philosopher.state) {
       case PhilosopherState.Thinking:
         philosopher.state = PhilosopherState.Hungry
-        console.log(`Philosopher ${philosopher.index + 1} está com fome`)
+        tableSemaphore.set_log(`Philosopher ${philosopher.index + 1} está com fome`)
         break
 
       case PhilosopherState.Hungry:
-        if (tableSemaphore.getSemaphore(philosopher))
+        if (tableSemaphore.getSemaphorePermission(philosopher))
           tableSemaphore.take_forks(philosopher)
         else
-          console.log(`Philosopher ${philosopher.index + 1} foi colocado na fila`)
+          tableSemaphore.set_log(`Philosopher ${philosopher.index + 1} foi colocado na fila`)
         break
 
       case PhilosopherState.Eating:
-        console.log(`Philosopher ${philosopher.index + 1} acabou de comer`)
+        tableSemaphore.set_log(`Philosopher ${philosopher.index + 1} acabou de comer`)
         tableSemaphore.put_forks(philosopher)
-        console.log(`Philosopher ${philosopher.index + 1} está pensando`)
+        tableSemaphore.set_log(`Philosopher ${philosopher.index + 1} está pensando`)
         break
 
       default: break
     }
-    tableSemaphore.setSemaphore()
-    // setTable({ ...table })
-    sleep(100).then(() => setTableSemaphore({ ...tableSemaphore })).catch(error => console.log('error: ', error))
+
+    sleep(speed).then(() => setTableSemaphore({ ...tableSemaphore })).catch(() => tableSemaphore.set_log('error'))
   }, [tableSemaphore])
 
 
   return (
-    <Row>
-      <TableElement philosophers={table.philosophers} forks={table.forks} />
-      <TableElement philosophers={tableRandom.philosophers} forks={tableRandom.forks} />
-      <TableElement philosophers={tableSemaphore.philosophers} forks={tableSemaphore.forks} />
-    </Row>
+    <>
+      <Row align='middle' justify='end' style={{ margin: '20px', padding: '10px', backgroundColor: 'white', borderRadius: '10px' }}>
+        Speed in miliseconds:
+        <InputNumber value={speed} onChange={(value) => setSpeed(parseInt(value ? value?.toString() : ''))} style={{ margin: '10px', borderRadius: '10px' }} />
+      </Row>
+      <Row style={{ borderRadius: '20px'}}>
+        <Col span={8} style={{ backgroundColor: 'white', padding: '20px' }}>
+          <TableElement philosophers={table.philosophers} forks={table.forks} />
+          <LogElement logs={table.logs} />
+        </Col>
+        <Col span={8} style={{ backgroundColor: 'white', padding: '20px' }}>
+          <TableElement philosophers={tableRandom.philosophers} forks={tableRandom.forks} />
+          <LogElement logs={tableRandom.logs} />
+        </Col>
+        <Col span={8} style={{ backgroundColor: 'white', padding: '20px' }}>
+          <TableElement philosophers={tableSemaphore.philosophers} forks={tableSemaphore.forks} />
+          <LogElement logs={tableSemaphore.logs} />
+        </Col>
+      </Row>
+    </>
   );
 };
 

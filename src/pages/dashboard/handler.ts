@@ -5,10 +5,15 @@ const total = 5
 export class Table implements ITable {
   readonly philosophers: Philosopher[];
   readonly forks: Fork[];
+  readonly logs: string[] = [];
 
   constructor() {
     this.philosophers = [0, 1, 2, 3, 4].map((_, index) => defaultPhilosopher(index))
     this.forks = [0, 1, 2, 3, 4].map((item: any, index: number) => defaultFork(index))
+  }
+
+  public readonly set_log = (log: string) => {
+    this.logs.unshift(log)
   }
 
   public get_forks = ({ index }: Philosopher) =>
@@ -36,20 +41,20 @@ export class Table implements ITable {
     const tookRigth = this.set_fork(philosopher, rightFork)
 
     if (tookLeft && tookRigth) {
-      console.log(`Philosopher ${philosopher.index + 1} começou a comer`)
+      this.set_log(`Philosopher ${philosopher.index + 1} começou a comer`)
       return philosopher.state = PhilosopherState.Eating
     }
 
     if (tookLeft) {
-      console.log(`Philosopher ${philosopher.index + 1} pegou o garfo esquerdo e está esperando o direito ficar livre`)
+      this.set_log(`Philosopher ${philosopher.index + 1} pegou o garfo esquerdo e está esperando o direito ficar livre`)
       return philosopher.state = PhilosopherState.Hungry
     }
 
     if (tookRigth) {
-      console.log(`Philosopher ${philosopher.index + 1} pegou o garfo direito e está esperando o esquerdo ficar livre`)
+      this.set_log(`Philosopher ${philosopher.index + 1} pegou o garfo direito e está esperando o esquerdo ficar livre`)
       return philosopher.state = PhilosopherState.Hungry
     }
-    console.log(`Philosopher ${philosopher.index + 1} não pegou nenhum garfo :(`)
+    this.set_log(`Philosopher ${philosopher.index + 1} não pegou nenhum garfo :(`)
     return philosopher.state = PhilosopherState.Hungry
   }
 
@@ -80,7 +85,7 @@ export class TableRandom extends Table {
       this.remove_fork(philosopher, rightFork)
       this.remove_fork(philosopher, leftFork)
       philosopher.state = PhilosopherState.Hungry
-      console.log(`Philosopher ${philosopher.index + 1} devolveu o garfo`)
+      this.set_log(`Philosopher ${philosopher.index + 1} devolveu o garfo`)
       return
     }
   }
@@ -91,38 +96,30 @@ export class TableRandom extends Table {
     const tookRigth = this.set_fork(philosopher, rightFork)
 
     if (tookLeft && tookRigth) {
-      console.log(`Philosopher ${philosopher.index + 1} começou a comer`)
+      this.set_log(`Philosopher ${philosopher.index + 1} começou a comer`)
       return philosopher.state = PhilosopherState.Eating
     }
 
     if (tookLeft) {
-      console.log(`Philosopher ${philosopher.index + 1} pegou o garfo esquerdo e está esperando o direito ficar livre`)
+      this.set_log(`Philosopher ${philosopher.index + 1} pegou o garfo esquerdo e está esperando o direito ficar livre`)
       return philosopher.state = PhilosopherState.Returning
     }
 
     if (tookRigth) {
-      console.log(`Philosopher ${philosopher.index + 1} pegou o garfo direito e está esperando o esquerdo ficar livre`)
+      this.set_log(`Philosopher ${philosopher.index + 1} pegou o garfo direito e está esperando o esquerdo ficar livre`)
       return philosopher.state = PhilosopherState.Returning
     }
-    console.log(`Philosopher ${philosopher.index + 1} não pegou nenhum garfo :(`)
+    this.set_log(`Philosopher ${philosopher.index + 1} não pegou nenhum garfo :(`)
     return philosopher.state = PhilosopherState.Returning
   }
 }
 
 export class TableSemaphore extends Table {
-  readonly semaphore = new Array(5).fill(true)
   constructor() {
     super();
   }
 
-  public setSemaphore = () => {
-    this.philosophers.map((philosopher: Philosopher, index: number) => {
-      this.semaphore[index + 1 < 5 ? index : 0] = philosopher.state !== PhilosopherState.Eating
-      this.semaphore[index - 1 >= 0 ? index : 4] = philosopher.state !== PhilosopherState.Eating
-    })
-  }
-
-  public getSemaphore = (philosopher: Philosopher): boolean => {
+  public getSemaphorePermission = (philosopher: Philosopher): boolean => {
     const { index } = philosopher
     const [ next, previous ] = [index + 1 < 5 ? index + 1 : 0, index - 1 >= 0 ? index - 1 : 4]
     return this.philosophers[next].state !== PhilosopherState.Eating &&
@@ -145,7 +142,7 @@ export class TableSemaphore extends Table {
 //     switch (philosopher.state) {
 //       case PhilosopherState.Thinking:
 //         philosopher.state = PhilosopherState.Hungry
-//         console.log(`Philosopher ${philosopher.index + 1} está com fome`)
+//         this.set_log(`Philosopher ${philosopher.index + 1} está com fome`)
 //         break
 
 //       case PhilosopherState.Hungry:
@@ -153,9 +150,9 @@ export class TableSemaphore extends Table {
 //         break
 
 //       case PhilosopherState.Eating:
-//         console.log(`Philosopher ${philosopher.index + 1} acabou de comer`)
+//         this.set_log(`Philosopher ${philosopher.index + 1} acabou de comer`)
 //         table.put_forks(philosopher)
-//         console.log(`Philosopher ${philosopher.index + 1} está pensando`)
+//         this.set_log(`Philosopher ${philosopher.index + 1} está pensando`)
 //         break
 
 //       default: break
