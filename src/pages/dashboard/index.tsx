@@ -129,15 +129,15 @@ const PhilosopherTable: FunctionComponent<PhilosopherTableProps> = () => {
         <InputNumber value={speed} onChange={(value) => setSpeed(parseInt(value ? value?.toString() : ''))} style={{ margin: '10px', borderRadius: '10px' }} />
       </Row>
       <Row style={{ borderRadius: '20px'}}>
-        <Col span={8} style={{ backgroundColor: 'white', padding: '20px' }}>
+        <Col xs={24} sm={12} md={12} lg={8} style={{ backgroundColor: 'white', padding: '20px' }}>
           <TableElement philosophers={table.philosophers} forks={table.forks} />
           <LogElement logs={table.logs} dinner={dinnerCount.table} />
         </Col>
-        <Col span={8} style={{ backgroundColor: 'white', padding: '20px' }}>
+        <Col xs={24} sm={12} md={12} lg={8} style={{ backgroundColor: 'white', padding: '20px' }}>
           <TableElement philosophers={tableRandom.philosophers} forks={tableRandom.forks} />
           <LogElement logs={tableRandom.logs} dinner={dinnerCount.randon} />
         </Col>
-        <Col span={8} style={{ backgroundColor: 'white', padding: '20px' }}>
+        <Col xs={24} sm={12} md={12} lg={8} style={{ backgroundColor: 'white', padding: '20px' }}>
           <TableElement philosophers={tableSemaphore.philosophers} forks={tableSemaphore.forks} />
           <LogElement logs={tableSemaphore.logs} dinner={dinnerCount.semaphore} semaphores={semaphore} />
         </Col>
