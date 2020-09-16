@@ -34,3 +34,8 @@ export interface ITable {
   philosophers: Philosopher[];
   forks: Fork[];
 }
+
+export interface Log {
+  message: string;
+  color: string;
+}

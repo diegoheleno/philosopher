@@ -2,9 +2,9 @@ let colors = {
   green: '#61bd4f',
   blue: '#0079bf',
   orange: '#ff9f1a',
-  red: '#eb5a46',
-  pink: '#ff78cb',
   lightgreen: '#51e898',
+  pink: '#ff78cb',
+  red: '#eb5a46',
   lightgray: 'lightgray',
   white: 'white',
 };

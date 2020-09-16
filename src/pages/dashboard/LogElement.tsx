@@ -1,15 +1,21 @@
 import React, { FunctionComponent } from 'react'
-import colors from '@/models/colors';
 import { Col, Row, Tag } from 'antd';
+import { Log } from './types';
 
 interface LogElementProps {
-  logs: string[];
+  logs: Log[];
+  dinner: number;
 }
 
 const LogElement : FunctionComponent<LogElementProps> = props => {
   return (
     <Col>
-      {props.logs.map(log => <Row><Tag>{log}</Tag></Row>)}
+      {/* <Row><span>{props.dinner} refeições feitas</span></Row> */}
+      {props.logs.map(log =>
+        <Row style={{ display: 'flex' }} >
+          <Tag style={{ display: 'flex', flexGrow: 1 }} color={log.color}>{log.message}</Tag>
+        </Row>
+      )}
     </Col>
   )
 }

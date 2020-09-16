@@ -1,19 +1,32 @@
-import { defaultFork, defaultPhilosopher, Fork, ForkState, ITable, Philosopher, PhilosopherState } from "./types";
+import colors from '@/models/colors';
+import { defaultFork, defaultPhilosopher, Fork, ForkState, ITable, Log, Philosopher, PhilosopherState } from "./types";
 
 const total = 5
 
 export class Table implements ITable {
   readonly philosophers: Philosopher[];
   readonly forks: Fork[];
-  readonly logs: string[] = [];
+  readonly logs: Log[] = [];
+  public dinners: number = 0;
 
   constructor() {
     this.philosophers = [0, 1, 2, 3, 4].map((_, index) => defaultPhilosopher(index))
     this.forks = [0, 1, 2, 3, 4].map((item: any, index: number) => defaultFork(index))
   }
 
-  public readonly set_log = (log: string) => {
-    this.logs.unshift(log)
+  public readonly initail_state = () => {
+    this.forks.map(fork => {
+      fork.philosopher = undefined
+      fork.state = ForkState.Free
+    })
+  }
+
+  public readonly set_dinners = () => {
+    this.dinners += 1
+  }
+
+  public readonly set_log = (message: string, index: number) => {
+    this.logs.unshift({ message, color: colors[index] })
   }
 
   public get_forks = ({ index }: Philosopher) =>
@@ -41,20 +54,21 @@ export class Table implements ITable {
     const tookRigth = this.set_fork(philosopher, rightFork)
 
     if (tookLeft && tookRigth) {
-      this.set_log(`Philosopher ${philosopher.index + 1} começou a comer`)
+      this.set_log(`Philosopher ${philosopher.index + 1} começou a comer`, philosopher.index)
+      this.set_dinners()
       return philosopher.state = PhilosopherState.Eating
     }
 
     if (tookLeft) {
-      this.set_log(`Philosopher ${philosopher.index + 1} pegou o garfo esquerdo e está esperando o direito ficar livre`)
+      this.set_log(`Philosopher ${philosopher.index + 1} pegou o garfo esquerdo`, philosopher.index)
       return philosopher.state = PhilosopherState.Hungry
     }
 
     if (tookRigth) {
-      this.set_log(`Philosopher ${philosopher.index + 1} pegou o garfo direito e está esperando o esquerdo ficar livre`)
+      this.set_log(`Philosopher ${philosopher.index + 1} pegou o garfo direito`, philosopher.index)
       return philosopher.state = PhilosopherState.Hungry
     }
-    this.set_log(`Philosopher ${philosopher.index + 1} não pegou nenhum garfo :(`)
+    this.set_log(`Philosopher ${philosopher.index + 1} não pegou nenhum garfo :(`, philosopher.index)
     return philosopher.state = PhilosopherState.Hungry
   }
 
@@ -85,7 +99,7 @@ export class TableRandom extends Table {
       this.remove_fork(philosopher, rightFork)
       this.remove_fork(philosopher, leftFork)
       philosopher.state = PhilosopherState.Hungry
-      this.set_log(`Philosopher ${philosopher.index + 1} devolveu o garfo`)
+      this.set_log(`Philosopher ${philosopher.index + 1} devolveu o garfo`, philosopher.index)
       return
     }
   }
@@ -96,20 +110,21 @@ export class TableRandom extends Table {
     const tookRigth = this.set_fork(philosopher, rightFork)
 
     if (tookLeft && tookRigth) {
-      this.set_log(`Philosopher ${philosopher.index + 1} começou a comer`)
+      this.set_log(`Philosopher ${philosopher.index + 1} começou a comer`, philosopher.index)
+      this.set_dinners()
       return philosopher.state = PhilosopherState.Eating
     }
 
     if (tookLeft) {
-      this.set_log(`Philosopher ${philosopher.index + 1} pegou o garfo esquerdo e está esperando o direito ficar livre`)
+      this.set_log(`Philosopher ${philosopher.index + 1} pegou o garfo esquerdo`, philosopher.index)
       return philosopher.state = PhilosopherState.Returning
     }
 
     if (tookRigth) {
-      this.set_log(`Philosopher ${philosopher.index + 1} pegou o garfo direito e está esperando o esquerdo ficar livre`)
+      this.set_log(`Philosopher ${philosopher.index + 1} pegou o garfo direito`, philosopher.index)
       return philosopher.state = PhilosopherState.Returning
     }
-    this.set_log(`Philosopher ${philosopher.index + 1} não pegou nenhum garfo :(`)
+    this.set_log(`Philosopher ${philosopher.index + 1} não pegou nenhum garfo :(`, philosopher.index)
     return philosopher.state = PhilosopherState.Returning
   }
 }
