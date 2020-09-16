@@ -15,6 +15,7 @@ const PhilosopherTable: FunctionComponent<PhilosopherTableProps> = () => {
   const [tableSemaphore, setTableSemaphore] = useState(new TableSemaphore())
   const [speed, setSpeed] = useState<number>(1000)
   const [dinnerCount, setDinnerCount] = useState<{ table: number, randon: number, semaphore: number }>({table: 0, randon: 0, semaphore: 0})
+  const [semaphore, setSemaphore] = useState<boolean[]>([true, true, true, true, true ])
 
   const sleep = (miliseconds: number | string) => {
     const value = typeof miliseconds === 'number' ? miliseconds : parseInt(miliseconds);
@@ -24,8 +25,7 @@ const PhilosopherTable: FunctionComponent<PhilosopherTableProps> = () => {
   useEffect(() => {
     if (table.deadlock()) {
       table.set_log('Deadlock :(', 5)
-      table.set_log('Reiniciando...', 5)
-      table.initail_state()
+      return
     }
     const index = Math.floor(Math.random() * 5);
     const philosopher = table.philosophers[index]
@@ -117,13 +117,14 @@ const PhilosopherTable: FunctionComponent<PhilosopherTableProps> = () => {
       default: break
     }
 
+    setSemaphore(tableSemaphore.philosophers.map(philosopher => tableSemaphore.getSemaphorePermission(philosopher)))
     sleep(speed).then(() => setTableSemaphore({ ...tableSemaphore })).catch(() => tableSemaphore.set_log('error', 5))
   }, [tableSemaphore])
 
 
   return (
     <>
-      <Row align='middle' justify='end' style={{ margin: '20px', padding: '10px', backgroundColor: 'white', borderRadius: '10px' }}>
+      <Row align='middle' justify='end' style={{ margin: '0px 0px 20px 0px', padding: '10px', backgroundColor: 'white', borderRadius: '10px' }}>
         Speed in miliseconds:
         <InputNumber value={speed} onChange={(value) => setSpeed(parseInt(value ? value?.toString() : ''))} style={{ margin: '10px', borderRadius: '10px' }} />
       </Row>
@@ -138,7 +139,7 @@ const PhilosopherTable: FunctionComponent<PhilosopherTableProps> = () => {
         </Col>
         <Col span={8} style={{ backgroundColor: 'white', padding: '20px' }}>
           <TableElement philosophers={tableSemaphore.philosophers} forks={tableSemaphore.forks} />
-          <LogElement logs={tableSemaphore.logs} dinner={dinnerCount.semaphore} />
+          <LogElement logs={tableSemaphore.logs} dinner={dinnerCount.semaphore} semaphores={semaphore} />
         </Col>
       </Row>
     </>
