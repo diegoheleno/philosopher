@@ -35,7 +35,7 @@ export default defineConfig({
               path: '/',
               name: 'Problem',
               icon: 'CoffeeOutlined',
-              component: './dashboard/workplace',
+              component: './dashboard',
             },
             {
               component: './404',

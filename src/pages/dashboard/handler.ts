@@ -23,18 +23,6 @@ export class Table implements ITable {
     return false
   }
 
-  // public return_forks = (philosopher: Philosopher) => {
-  //   const [rightFork, leftFork] = this.get_forks(philosopher)
-
-  //   if (philosopher.state === PhilosopherState.Returning) {
-  //     this.remove_fork(philosopher, rightFork)
-  //     this.remove_fork(philosopher, leftFork)
-  //     philosopher.state = PhilosopherState.Hungry
-  //     console.log(`Philosopher ${philosopher.index + 1} devolveu o garfo`)
-  //     return
-  //   }
-  // }
-
   public remove_fork = (philosopher: Philosopher, fork: Fork) => {
     if (philosopher.index === fork.philosopher?.index) {
       fork.philosopher = undefined
@@ -76,6 +64,69 @@ export class Table implements ITable {
 
   public readonly deadlock = () => {
     return this.philosophers.every(philosopher => philosopher.state === PhilosopherState.Hungry) && this.forks.every(fork => fork.philosopher)
+  }
+}
+
+
+export class TableRandom extends Table {
+  constructor() {
+    super();
+  }
+
+  public return_forks = (philosopher: Philosopher) => {
+    const [rightFork, leftFork] = this.get_forks(philosopher)
+
+    if (philosopher.state === PhilosopherState.Returning) {
+      this.remove_fork(philosopher, rightFork)
+      this.remove_fork(philosopher, leftFork)
+      philosopher.state = PhilosopherState.Hungry
+      console.log(`Philosopher ${philosopher.index + 1} devolveu o garfo`)
+      return
+    }
+  }
+
+  public readonly take_ruturn_forks = (philosopher: Philosopher) => {
+    const [rightFork, leftFork] = this.get_forks(philosopher)
+    const tookLeft = this.set_fork(philosopher, leftFork)
+    const tookRigth = this.set_fork(philosopher, rightFork)
+
+    if (tookLeft && tookRigth) {
+      console.log(`Philosopher ${philosopher.index + 1} começou a comer`)
+      return philosopher.state = PhilosopherState.Eating
+    }
+
+    if (tookLeft) {
+      console.log(`Philosopher ${philosopher.index + 1} pegou o garfo esquerdo e está esperando o direito ficar livre`)
+      return philosopher.state = PhilosopherState.Returning
+    }
+
+    if (tookRigth) {
+      console.log(`Philosopher ${philosopher.index + 1} pegou o garfo direito e está esperando o esquerdo ficar livre`)
+      return philosopher.state = PhilosopherState.Returning
+    }
+    console.log(`Philosopher ${philosopher.index + 1} não pegou nenhum garfo :(`)
+    return philosopher.state = PhilosopherState.Returning
+  }
+}
+
+export class TableSemaphore extends Table {
+  readonly semaphore = new Array(5).fill(true)
+  constructor() {
+    super();
+  }
+
+  public setSemaphore = () => {
+    this.philosophers.map((philosopher: Philosopher, index: number) => {
+      this.semaphore[index + 1 < 5 ? index : 0] = philosopher.state !== PhilosopherState.Eating
+      this.semaphore[index - 1 >= 0 ? index : 4] = philosopher.state !== PhilosopherState.Eating
+    })
+  }
+
+  public getSemaphore = (philosopher: Philosopher): boolean => {
+    const { index } = philosopher
+    const [ next, previous ] = [index + 1 < 5 ? index + 1 : 0, index - 1 >= 0 ? index - 1 : 4]
+    return this.philosophers[next].state !== PhilosopherState.Eating &&
+           this.philosophers[previous].state !== PhilosopherState.Eating
   }
 }
 
