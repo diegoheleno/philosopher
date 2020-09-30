@@ -25,6 +25,8 @@ export class Table implements ITable {
 
   public readonly set_log = (message: string, index: number) => {
     this.logs.unshift({ message, color: colors[index] })
+    if (this.logs.length > 20)
+      this.logs.pop()
   }
 
   public get_forks = ({ index }: Philosopher) =>
